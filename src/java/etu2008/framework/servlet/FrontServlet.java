@@ -4,8 +4,10 @@
  */
 package etu2008.framework.servlet;
 
+import etu2008.framework.Mapping;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -16,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author megane
  */
 public class FrontServlet extends HttpServlet {
-
+    HashMap<String, Mapping> mappingUrls;
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -31,19 +33,13 @@ public class FrontServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
        try (PrintWriter out = response.getWriter()) {
             /* TODO output your page here. You may use following sample code. */
-            out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet FrontServlet </title>");            
-            out.println("</head>");
-            out.println("<body>");
+           
             out.println("<h1>Servlet FrontServlet at " + request.getContextPath() + "</h1>");
             out.println(request.getServletPath());
             if(request.getParameter("anarana") != null){
-                  out.println("<p>Welcome "+request.getParameter("anarana")+" !! </p>");
+                  out.println("<p> Hello "+request.getParameter("anarana")+" !! </p>");
             }   
-            out.println("</body>");
-            out.println("</html>");
+           
         }
     }
 
