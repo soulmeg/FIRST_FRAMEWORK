@@ -2,9 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package etu2008.framework.dataObject;
+package dataObject;
 
-import etu2008.framework.annotations.url;
+//import url;
 
 /**
  *
@@ -38,7 +38,7 @@ public class Emp {
         this.setNom(nom);
     }
     
-    @url("emp-save")
+//    @url("emp-save")
     public void findAll() {
         System.out.println("Liste de tous les employes");
     }
