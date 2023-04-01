@@ -2,14 +2,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package etu2008.framework;
-
 /**
  *
  * @author megane
  */
+package mapping;
 public class Mapping {
-     String className;
+    String className;
     String method;
 
     public String getClassName() {
