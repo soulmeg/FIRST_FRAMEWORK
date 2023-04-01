@@ -11,8 +11,8 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
 
 public class FrontServlet extends HttpServlet {
     HashMap<String, Mapping> mappingUrls;
@@ -51,23 +51,33 @@ public class FrontServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         PrintWriter out = response.getWriter();
-        String url = request.getHttpServletMapping().getMatchValue();
+        String url = request.getServletPath();
+        String url2=url.replace("/","");
         try {
-            if (mappingUrls.containsKey(url)) {
-                Mapping mapping = mappingUrls.get(url);
-                Class<?> cls = Class.forName(mapping.getClassName());
-                Object value = cls.getMethod(mapping.getMethod()).invoke(null);
-                if (value instanceof ModelView) {
-                    ModelView view = (ModelView) value;
-                    request.getRequestDispatcher(view.getView()).forward(request, response);
-                }
+    //      for (Map.Entry<String, Mapping> entry : mappingUrls.entrySet()) {
+    //         out.println("Nom de l'url: "+entry.getKey()+" //Nom de la classe: "+ entry.getValue().getClassName()+" //Nom des methodes: "+ entry.getValue().getMethod());
+
+    //      }
+            if(this.getMappingUrls().containsKey(url2)){
+                String classname = this.getMappingUrls().get(url2).getClassName();
+                String methode = this.getMappingUrls().get(url2).getMethod();
+                Class<?> cls = Class.forName(classname);
+                Method method = cls.getDeclaredMethod(methode);
+                Object objet = cls.newInstance();
+                ModelView mv=(ModelView) method.invoke(objet);
+                request.getRequestDispatcher(mv.getView()).forward(request, response);
             }
+            else throw new Exception("Non valableee");
+                   
+      
+          
+            
         } catch (Exception e) {
             throw new ServletException(e);
         }
         
     }
-
+    
   
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
