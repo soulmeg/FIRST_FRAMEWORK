@@ -6,18 +6,13 @@ package servlet;
 
 import mapping.*;
 import annotations.url;
-import mapping.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
-import java.net.URL;
+import java.io.*;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
 public class FrontServlet extends HttpServlet {
     HashMap<String, Mapping> mappingUrls;
@@ -55,23 +50,22 @@ public class FrontServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-       try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-           
-            out.println("<h1>Servlet FrontServlet at " + request.getContextPath() + "</h1>");
-            out.println(request.getServletPath());
-     
-             if(request.getParameter("anarana") != null){
-                  out.println("<p> Hello "+request.getParameter("anarana")+" !! </p>");
-            } 
-             
-             for (Map.Entry<String, Mapping> entry : mappingUrls.entrySet()) {
-                out.println("Nom de l'url: "+entry.getKey()+" //Nom de la classe: "+ entry.getValue().getClassName()+" //Nom des methodes: "+ entry.getValue().getMethod());
-            
-             }
-           
+        PrintWriter out = response.getWriter();
+        String url = request.getHttpServletMapping().getMatchValue();
+        try {
+            if (mappingUrls.containsKey(url)) {
+                Mapping mapping = mappingUrls.get(url);
+                Class<?> cls = Class.forName(mapping.getClassName());
+                Object value = cls.getMethod(mapping.getMethod()).invoke(null);
+                if (value instanceof ModelView) {
+                    ModelView view = (ModelView) value;
+                    request.getRequestDispatcher(view.getView()).forward(request, response);
+                }
+            }
+        } catch (Exception e) {
+            throw new ServletException(e);
         }
+        
     }
 
   
