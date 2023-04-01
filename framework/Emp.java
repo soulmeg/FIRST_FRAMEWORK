@@ -5,9 +5,8 @@
 package dataObject;
 
 import annotations.url;
-
+import mapping.*;
 /**
- *
  * @author megane
  */
 public class Emp {
@@ -42,4 +41,11 @@ public class Emp {
     public void findAll() {
         System.out.println("Liste de tous les employes");
     }
+
+    @url("emp-list")
+    public static ModelView listEmp() {
+        ModelView view = new ModelView("liste_employe.jsp");
+        return view;
+    }
+
 }

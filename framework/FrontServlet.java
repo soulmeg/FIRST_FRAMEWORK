@@ -6,18 +6,13 @@ package servlet;
 
 import mapping.*;
 import annotations.url;
-import mapping.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.Map;
-import java.net.URL;
+import java.io.*;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import javax.servlet.*;
+import javax.servlet.http.*;
 
 public class FrontServlet extends HttpServlet {
     HashMap<String, Mapping> mappingUrls;
@@ -55,25 +50,34 @@ public class FrontServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-       try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-           
-            out.println("<h1>Servlet FrontServlet at " + request.getContextPath() + "</h1>");
-            out.println(request.getServletPath());
-     
-             if(request.getParameter("anarana") != null){
-                  out.println("<p> Hello "+request.getParameter("anarana")+" !! </p>");
-            } 
-             
-             for (Map.Entry<String, Mapping> entry : mappingUrls.entrySet()) {
-                out.println("Nom de l'url: "+entry.getKey()+" //Nom de la classe: "+ entry.getValue().getClassName()+" //Nom des methodes: "+ entry.getValue().getMethod());
-            
-             }
-           
-        }
-    }
+        PrintWriter out = response.getWriter();
+        String url = request.getServletPath();
+        String url2=url.replace("/","");
+        try {
+    //      for (Map.Entry<String, Mapping> entry : mappingUrls.entrySet()) {
+    //         out.println("Nom de l'url: "+entry.getKey()+" //Nom de la classe: "+ entry.getValue().getClassName()+" //Nom des methodes: "+ entry.getValue().getMethod());
 
+    //      }
+            if(this.getMappingUrls().containsKey(url2)){
+                String classname = this.getMappingUrls().get(url2).getClassName();
+                String methode = this.getMappingUrls().get(url2).getMethod();
+                Class<?> cls = Class.forName(classname);
+                Method method = cls.getDeclaredMethod(methode);
+                Object objet = cls.newInstance();
+                ModelView mv=(ModelView) method.invoke(objet);
+                request.getRequestDispatcher(mv.getView()).forward(request, response);
+            }
+            else throw new Exception("Non valableee");
+                   
+      
+          
+            
+        } catch (Exception e) {
+            throw new ServletException(e);
+        }
+        
+    }
+    
   
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

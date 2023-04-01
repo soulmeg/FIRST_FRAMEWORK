@@ -10,4 +10,7 @@ public class ModelView{
     }
     public ModelView(){
     }
+    public ModelView(String view) {
+        setView(view);
+    }
 }
