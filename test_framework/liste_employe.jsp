@@ -1,3 +1,8 @@
+<%@page import="java.util.HashMap"%>
+<%@page import="java.util.Vector"%>
+<%@page import="dataObject.*"%>
+<% Vector<Emp> emp = (Vector<Emp>) request.getAttribute("employe");%>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +12,9 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>WELCOME MY DEAR</h1>
+    <h1>Liste des employes</h1>
+   <%for(Emp e: emp){ %>
+    <p><%=e.getNom()%></p>
+   <%}%>
 </body>
 </html>
