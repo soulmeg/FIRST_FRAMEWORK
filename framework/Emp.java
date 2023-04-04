@@ -6,9 +6,10 @@ package dataObject;
 
 import annotations.url;
 import mapping.*;
-/**
- * @author megane
- */
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
+
 public class Emp {
     int id;
     String nom;
@@ -43,9 +44,15 @@ public class Emp {
     }
 
     @url("emp-list")
-    public static ModelView listEmp() {
+    public static ModelView listEmp()throws Exception{
         ModelView view = new ModelView("liste_employe.jsp");
+        Vector<Emp> emp=new Vector<>();
+        emp.add(new Emp(1,"Diana"));
+        emp.add(new Emp(2,"Kanto"));
+        emp.add(new Emp(3,"Babe"));
+        view.addItem("employe",emp);
         return view;
     }
 
 }
+// <h4><% out.print(emp.get(i).getNom());%></h4>

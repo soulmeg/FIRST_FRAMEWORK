@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.servlet.*;
 import javax.servlet.http.*;
-
+import java.util.Collection;
 public class FrontServlet extends HttpServlet {
     HashMap<String, Mapping> mappingUrls;
 
@@ -65,13 +65,13 @@ public class FrontServlet extends HttpServlet {
                 Method method = cls.getDeclaredMethod(methode);
                 Object objet = cls.newInstance();
                 ModelView mv=(ModelView) method.invoke(objet);
+                for (Map.Entry<String, Object> e : mv.getData().entrySet()) {
+                    request.setAttribute(e.getKey(),e.getValue());
+                }
                 request.getRequestDispatcher(mv.getView()).forward(request, response);
             }
             else throw new Exception("Non valableee");
-                   
-      
-          
-            
+    
         } catch (Exception e) {
             throw new ServletException(e);
         }
@@ -89,13 +89,8 @@ public class FrontServlet extends HttpServlet {
             throws ServletException, IOException {
         processRequest(request, response);
     }
-
-  
     public String getServletInfo() {
         return "Short description";
-    }// </editor-fold>
-
-
-   
+    }
 
 }
