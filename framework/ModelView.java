@@ -2,6 +2,7 @@ package mapping;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class ModelView{
     String view;
     HashMap<String, Object> data=new HashMap<String,Object>();
@@ -24,12 +25,9 @@ public class ModelView{
         this.data=d;
     }
 // ke,valeur argument ---->mampitonbo anle zavatra anaty hasmap
-    // function addItem(String,Object)
-
     public void addItem(String key,Object valeur)throws Exception{
         this.getData().put(key,valeur);
     }
 }
-
 // <!-- <% Hashmap<String,Object> data = (Hashmap<String,Object>) request.getAttribute("lst"); %> -->
     // <!-- <h1><% out.print(data.get(0)); %></h1> -->
