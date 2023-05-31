@@ -1,6 +1,4 @@
-
 package servlet;
-
 import mapping.*;
 import dataObject.*;
 import annotations.url;
@@ -10,6 +8,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Enumeration;
+import java.lang.reflect.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.swing.ViewportLayout;
@@ -17,6 +16,8 @@ import javax.swing.text.html.parser.ContentModel;
 import java.sql.Date;
 import java.util.Vector;
 import java.sql.Timestamp;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.Method;
 public class FrontServlet extends HttpServlet {
     HashMap<String, Mapping> mappingUrls;
 
@@ -54,40 +55,106 @@ public class FrontServlet extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        PrintWriter out = response.getWriter();
-        String url = request.getServletPath();
-        String url2=url.replace("/","");
+            PrintWriter out = response.getWriter();
+            String url = request.getServletPath();
+            String url2=url.replace("/","");
         try {
-        //  for (Map.Entry<String, Mapping> entry : mappingUrls.entrySet()) {
-        //     out.println("Nom de l'url: "+entry.getKey()+" //Nom de la classe: "+ entry.getValue().getClassName()+" //Nom des methodes: "+ entry.getValue().getMethod());
-        //  }  
-            // out.println(url2); //Nom de l'url
+            out.println(url2); //Nom de l'url
             if(this.getMappingUrls().containsKey(url2)){
                 String classname = this.getMappingUrls().get(url2).getClassName();
                 String methode = this.getMappingUrls().get(url2).getMethod();
                 Class<?> cls = Class.forName(classname);
-                Method method = cls.getDeclaredMethod(methode);
+                Method[] methods = cls.getDeclaredMethods();
+                Vector<String> nomForm=liste_nomFormulaire(request);
                 Object objet = cls.newInstance();
-                invok_object(objet,request,response);
-                if(objet.getClass().getSimpleName().equals("Emp")){
-                    Emp e = (Emp) objet;
-                    e.save();
-                    out.println("NOM: "+e.getNom());
-                    out.println("PRENOMS: "+ e.getPrenoms());
-                    out.println("DATE DE NAISSANCE: "+e.getDateNaissance());
+                Method method = null;
+                for (Method m : methods) {
+                    if (m.getName().equals(methode)) {
+                        method = m;
+                        break;
+                    }
                 }
-                ModelView mv=(ModelView) method.invoke(objet);
+                if (method != null) {
+                    Class<?>[] parameterTypes = method.getParameterTypes();
+                    if(parameterTypes.length > 0){
+                        ifHaveParameter(out,objet,methode,method,nomForm,parameterTypes,cls,request,response);
+                    }
+
+                    else if(parameterTypes.length == 0) {
+                        Method mi = cls.getDeclaredMethod(methode);
+                        ModelView mv=(ModelView) mi.invoke(objet);
+                        for (Map.Entry<String, Object> e : mv.getData().entrySet()) {
+                            request.setAttribute(e.getKey(),e.getValue());
+                        }
+                    request.getRequestDispatcher(mv.getView()).forward(request, response);
+                    }
+                } 
+                else {      
+                    out.println("Méthode non trouvée");
+                }
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace(out);
+            throw new ServletException(e);
+        }
+    }
+
+    public void ifHaveParameter(PrintWriter out,Object objet,String methode,Method method,Vector<String> nomForm,Class<?>[] parameterTypes,Class<?> cls,HttpServletRequest request, HttpServletResponse response)throws Exception{
+        Object ob = null; // Initialisez la variable ob
+        Method mi = cls.getDeclaredMethod(methode, parameterTypes);
+        Parameter[] parameters = mi.getParameters();
+        Vector<Object> vect_object = new Vector<>();
+        int taille=0;
+        for (int i = 0; i < nomForm.size(); i++) {
+            out.println("ireto avy "+nomForm.get(i));
+        }
+        for (Parameter parameter : parameters) {
+            for (int i = 0; i < nomForm.size(); i++) {
+                    if (parameter.getName().equals(nomForm.get(i))){   
+                    // Récupérer le paramètre de la requête et effectuer une conversion de type
+                    String paramValue = request.getParameter(parameter.getName());
+                        if (parameter.getType().equals(String.class)) {
+                            ob = paramValue; 
+                        } else if (parameter.getType().equals(Integer.class)) {
+                            ob = Integer.parseInt(paramValue); 
+                        } else if (parameter.getType().equals(Double.class)) {
+                            ob = Double.parseDouble(paramValue);
+                        }
+                    vect_object.add(ob);
+                    }
+                    else if(!parameter.getName().equals(nomForm.get(i))){
+                        Object kk=null;
+                        out.println("izay null "+parameter.getName());
+                        vect_object.add(kk);
+                    }
+            }
+        }
+            Object[] obj_parametres = vect_object.toArray();
+            checkVoid(obj_parametres,request, response);
+            out.println(obj_parametres.length);
+            for(int o=0;o<obj_parametres.length;o++){
+                out.println("object parameter : "+obj_parametres[o]);
+            }
+            if(mi.invoke(objet,obj_parametres) instanceof ModelView){
+                ModelView mv = (ModelView) mi.invoke(objet,obj_parametres);
                 for (Map.Entry<String, Object> e : mv.getData().entrySet()) {
-                    request.setAttribute(e.getKey(),e.getValue());
+                    request.setAttribute(e.getKey(), e.getValue());
                 }
                 request.getRequestDispatcher(mv.getView()).forward(request, response);
             }
-            // else throw new Exception("Non valableee");
-            
-        } catch (Exception e) {
-            throw new ServletException(e);
+    }
+
+
+
+    public void checkVoid(Object[] obj_parametres,HttpServletRequest request, HttpServletResponse response) throws Exception{
+        int count=0;
+        for(int i=0;i<obj_parametres.length;i++){
+            if(obj_parametres[i]==null) count++;
         }
-        
+        if(count == obj_parametres.length) {
+            request.getRequestDispatcher("Error.jsp").forward(request, response);
+        }
     }
 
 
@@ -192,3 +259,16 @@ public class FrontServlet extends HttpServlet {
 
 }
 
+ ////////////////////////////////////////////////////////////Sprint 7///////////////////////////////////////////// 
+               
+                // Object objet = cls.newInstance();
+                // out.println(method.getParameters());
+                // invok_object(objet,request,response);
+                // if(objet.getClass().getSimpleName().equals("Emp")){
+                //     Emp e = (Emp) objet;
+                //     e.save();
+                //     out.println("NOM: "+e.getNom());
+                //     out.println("PRENOMS: "+ e.getPrenoms());
+                //     out.println("DATE DE NAISSANCE: "+e.getDateNaissance());
+                //     out.println(method.getName());
+                // }
