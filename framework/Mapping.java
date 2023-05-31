@@ -1,11 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-/**
- *
- * @author megane
- */
 package mapping;
 public class Mapping {
     String className;
@@ -18,7 +10,6 @@ public class Mapping {
     public void setClassName(String className) {
         this.className = className;
     }
-
     public String getMethod() {
         return method;
     }

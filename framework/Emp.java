@@ -1,5 +1,4 @@
 package dataObject;
-
 import annotations.url;
 import mapping.*;
 import java.util.HashMap;
@@ -49,6 +48,12 @@ public class Emp {
         this.setPrenoms(prenom);
         this.setDateNaissance(d);
     }
+    public Emp(int id, String nom,String prenom) {
+        this.setId(id);
+        this.setNom(nom);
+        this.setPrenoms(prenom);
+        // this.setDateNaissance(d);
+    }
 
     public Emp(int id, String nom) {
         this.setId(id);
@@ -75,5 +80,23 @@ public class Emp {
     public void save(){
         System.out.println("coucou "+this.getNom()+" "+this.getPrenoms()+" nee le "+this.getDateNaissance());
     }
+
+
+    // public ModelView findByToerana(Integer id,String nomp)throws Exception{
+    @url("hab-emp")
+    public ModelView findByToerana(Integer id)throws Exception{
+       ModelView view = new ModelView("detailEmploye.jsp");
+        Vector<Emp> emp=new Vector<>();
+        Vector<Emp> e=new Vector<>();
+        emp.add(new Emp(1,"Rakotomaharo","Diana"));
+        emp.add(new Emp(2,"Ramilijaona","Kantoniaina"));
+        for(int i=0;i<emp.size();i++){
+            if(emp.get(i).getId()==id){
+                e.add(emp.get(i));
+            }
+        }
+        view.addItem("idChoisi",e);
+       return view;       
+    }
+
 }
-// <h4><% out.print(emp.get(i).getNom());%></h4>

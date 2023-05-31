@@ -1,7 +1,6 @@
 <%@page import="java.util.HashMap"%>
 <%@page import="java.util.Vector"%>
 <%@page import="dataObject.*"%>
-<% Vector<Emp> emp = (Vector<Emp>) request.getAttribute("employe");%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,9 +10,14 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Liste des employes</h1>
-   <%for(Emp e: emp){ %>
-    <p><%=e.getNom()%></p>
-   <%}%>
+    <h1>Veuiller choisir un id de personne </h1>
+    <form action="hab-emp" method="post">
+        <select name="id" id="">
+            <% for(int i=1;i<3;i++) { %>
+                <option value="<%=i%>" ><%=i%></option>
+            <% } %>
+        </select>
+        <input type="submit" value="Valider">
+    </form>
 </body>
 </html>
