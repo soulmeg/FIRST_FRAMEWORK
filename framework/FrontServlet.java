@@ -93,7 +93,6 @@ public class FrontServlet extends HttpServlet {
                     out.println("Méthode non trouvée");
                 }
             }
-            
         } catch (Exception e) {
             e.printStackTrace(out);
             throw new ServletException(e);
@@ -105,44 +104,51 @@ public class FrontServlet extends HttpServlet {
         Method mi = cls.getDeclaredMethod(methode, parameterTypes);
         Parameter[] parameters = mi.getParameters();
         Vector<Object> vect_object = new Vector<>();
+        Vector<String> param_exist =new Vector<>();
         int taille=0;
-        for (int i = 0; i < nomForm.size(); i++) {
-            out.println("ireto avy "+nomForm.get(i));
-        }
         for (Parameter parameter : parameters) {
+            String name= parameter.getName();
+            if(parameter.getType().isArray()){
+                name=name+"[]";
+            }
             for (int i = 0; i < nomForm.size(); i++) {
-                    if (parameter.getName().equals(nomForm.get(i))){   
-                    // Récupérer le paramètre de la requête et effectuer une conversion de type
-                    String paramValue = request.getParameter(parameter.getName());
-                        if (parameter.getType().equals(String.class)) {
-                            ob = paramValue; 
-                        } else if (parameter.getType().equals(Integer.class)) {
-                            ob = Integer.parseInt(paramValue); 
-                        } else if (parameter.getType().equals(Double.class)) {
-                            ob = Double.parseDouble(paramValue);
-                        }
-                    vect_object.add(ob);
+            Object oo=null;
+            if(name.equals(nomForm.get(i))){
+                if(parameter.getType().isArray()){
+                    oo=request.getParameterValues(name);
+                }
+                else{
+                    oo=request.getParameter(name);
+                    if (parameter.getType().equals(String.class)) {
+                        oo = oo; 
+                    } else if (parameter.getType().equals(Integer.class)) {
+                        oo = Integer.parseInt(String.valueOf(oo)); 
+                    } else if (parameter.getType().equals(Double.class)) {
+                        oo = Double.parseDouble(String.valueOf(oo));
                     }
-                    else if(!parameter.getName().equals(nomForm.get(i))){
-                        Object kk=null;
-                        out.println("izay null "+parameter.getName());
-                        vect_object.add(kk);
-                    }
+                }
+            vect_object.add(oo);
+            break;
             }
         }
-            Object[] obj_parametres = vect_object.toArray();
-            checkVoid(obj_parametres,request, response);
-            out.println(obj_parametres.length);
-            for(int o=0;o<obj_parametres.length;o++){
-                out.println("object parameter : "+obj_parametres[o]);
-            }
-            if(mi.invoke(objet,obj_parametres) instanceof ModelView){
-                ModelView mv = (ModelView) mi.invoke(objet,obj_parametres);
-                for (Map.Entry<String, Object> e : mv.getData().entrySet()) {
-                    request.setAttribute(e.getKey(), e.getValue());
-                }
-                request.getRequestDispatcher(mv.getView()).forward(request, response);
-            }
+        param_exist.add(parameter.getName());
+        }
+        Object[] obj_parametres = vect_object.toArray();
+        checkVoid(obj_parametres,request, response);
+        // Ordi 
+        for(int k=0;k<param_exist.size();k++){
+            out.println("parametre qui existe : "+param_exist.get(k));
+        }
+        for(int o=0;o<obj_parametres.length;o++){
+            out.println("object parameter : "+obj_parametres[o]);
+        }
+        if(mi.invoke(objet,obj_parametres) instanceof ModelView){
+        ModelView mv = (ModelView) mi.invoke(objet,obj_parametres);
+        for (Map.Entry<String, Object> e : mv.getData().entrySet()) {
+            request.setAttribute(e.getKey(), e.getValue());
+        }
+        request.getRequestDispatcher(mv.getView()).forward(request, response);
+    }
     }
 
 
@@ -164,7 +170,6 @@ public class FrontServlet extends HttpServlet {
         Vector<String> parameter=liste_nomFormulaire(request);
         Vector<String> attribut=convertToVector(liste_attribut);
         try{
-            // String val = request.getParameter(l.get(0));
             for(int i = 0; i < objet.getClass().getDeclaredFields().length; i++){
                 for(int j=0;j<parameter.size();j++){
                     if(objet.getClass().getDeclaredFields()[i].getName().equals(parameter.get(j))){
@@ -261,14 +266,3 @@ public class FrontServlet extends HttpServlet {
 
  ////////////////////////////////////////////////////////////Sprint 7///////////////////////////////////////////// 
                
-                // Object objet = cls.newInstance();
-                // out.println(method.getParameters());
-                // invok_object(objet,request,response);
-                // if(objet.getClass().getSimpleName().equals("Emp")){
-                //     Emp e = (Emp) objet;
-                //     e.save();
-                //     out.println("NOM: "+e.getNom());
-                //     out.println("PRENOMS: "+ e.getPrenoms());
-                //     out.println("DATE DE NAISSANCE: "+e.getDateNaissance());
-                //     out.println(method.getName());
-                // }
