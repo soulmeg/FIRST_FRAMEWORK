@@ -12,11 +12,8 @@
 <body>
     <h1>Veuiller choisir un id de personne </h1>
     <form action="hab-emp" method="post">
-        <select name="id" id="">
-            <% for(int i=1;i<3;i++) { %>
-                <option value="<%=i%>" ><%=i%></option>
-            <% } %>
-        </select>
+        <p>1<input type="checkbox" value="1" name="option[]"></p>
+        <p>2<input type="checkbox" value="2" name="option[]"></p>
         <input type="submit" value="Valider">
     </form>
 </body>

@@ -9,7 +9,9 @@ public class Emp {
     int Id;
     String Nom;
     String Prenoms;
+    String Genre;
     Date DateNaissance;
+
 
     public Emp() {
     }
@@ -36,22 +38,38 @@ public class Emp {
      public void setPrenoms(String nom) {
         this.Prenoms = nom;
     }
+    public String getGenre(){
+        return this.Genre;
+    }
+    public void setGenre(String ge){
+        this.Genre=ge;
+    }
     public void setDateNaissance(Date d){
         this.DateNaissance=d;
     }
     public Date getDateNaissance(){
         return DateNaissance;
     }
+
     public Emp(int id, String nom,String prenom, Date d) {
         this.setId(id);
         this.setNom(nom);
         this.setPrenoms(prenom);
         this.setDateNaissance(d);
     }
+
     public Emp(int id, String nom,String prenom) {
         this.setId(id);
         this.setNom(nom);
         this.setPrenoms(prenom);
+        // this.setDateNaissance(d);
+    }
+
+     public Emp(int id, String nom,String prenom,String genre) {
+        this.setId(id);
+        this.setNom(nom);
+        this.setPrenoms(prenom);
+        this.setGenre(genre);
         // this.setDateNaissance(d);
     }
 
@@ -82,17 +100,21 @@ public class Emp {
     }
 
 
+
     // public ModelView findByToerana(Integer id,String nomp)throws Exception{
     @url("hab-emp")
-    public ModelView findByToerana(Integer id)throws Exception{
+    public ModelView findByToerana(String [] option)throws Exception{
+        // 
        ModelView view = new ModelView("detailEmploye.jsp");
         Vector<Emp> emp=new Vector<>();
         Vector<Emp> e=new Vector<>();
-        emp.add(new Emp(1,"Rakotomaharo","Diana"));
-        emp.add(new Emp(2,"Ramilijaona","Kantoniaina"));
-        for(int i=0;i<emp.size();i++){
-            if(emp.get(i).getId()==id){
-                e.add(emp.get(i));
+        emp.add(new Emp(1,"Rakotomaharo","Diana","fille"));
+        emp.add(new Emp(2,"Ramilijaona","Kantoniaina","fille"));
+        for(int i=0;i<emp.size();i++ ){
+            for(int j=0;j<option.length;j++){
+                if(String.valueOf(emp.get(i).getId()).equals(option[j])){
+                        e.add(emp.get(i));
+                }
             }
         }
         view.addItem("idChoisi",e);
