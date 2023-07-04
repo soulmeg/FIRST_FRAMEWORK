@@ -2,6 +2,7 @@ package servlet;
 import mapping.*;
 import dataObject.*;
 import annotations.url;
+import util.*;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -11,6 +12,7 @@ import java.util.Enumeration;
 import java.lang.reflect.*;
 import javax.servlet.*;
 import javax.servlet.http.*;
+import javax.swing.JFrame;
 import javax.swing.ViewportLayout;
 import javax.swing.text.html.parser.ContentModel;
 import java.sql.Date;
@@ -18,6 +20,10 @@ import java.util.Vector;
 import java.sql.Timestamp;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Method;
+import javax.servlet.http.Part;
+import javax.servlet.annotation.MultipartConfig;
+
+@MultipartConfig()
 public class FrontServlet extends HttpServlet {
     HashMap<String, Mapping> mappingUrls;
 
@@ -67,6 +73,7 @@ public class FrontServlet extends HttpServlet {
                 Method[] methods = cls.getDeclaredMethods();
                 Vector<String> nomForm=liste_nomFormulaire(request);
                 Object objet = cls.newInstance();
+                invok_object(objet,request,response);
                 Method method = null;
                 for (Method m : methods) {
                     if (m.getName().equals(methode)) {
@@ -135,13 +142,6 @@ public class FrontServlet extends HttpServlet {
         }
         Object[] obj_parametres = vect_object.toArray();
         checkVoid(obj_parametres,request, response);
-        // Ordi 
-        for(int k=0;k<param_exist.size();k++){
-            out.println("parametre qui existe : "+param_exist.get(k));
-        }
-        for(int o=0;o<obj_parametres.length;o++){
-            out.println("object parameter : "+obj_parametres[o]);
-        }
         if(mi.invoke(objet,obj_parametres) instanceof ModelView){
         ModelView mv = (ModelView) mi.invoke(objet,obj_parametres);
         for (Map.Entry<String, Object> e : mv.getData().entrySet()) {
@@ -174,7 +174,7 @@ public class FrontServlet extends HttpServlet {
                 for(int j=0;j<parameter.size();j++){
                     if(objet.getClass().getDeclaredFields()[i].getName().equals(parameter.get(j))){
                         String a = request.getParameter(objet.getClass().getDeclaredFields()[i].getName());
-                        String set="set"+parameter.get(j);
+                        String set="set"+capitalize(parameter.get(j));
                             if (objet.getClass().getDeclaredFields()[i].getType().getName().equals("int")){
                                     objet.getClass().getMethod(set,int.class).invoke(objet,a);                
                             }
@@ -185,14 +185,24 @@ public class FrontServlet extends HttpServlet {
                                     objet.getClass().getMethod(set,String.class).invoke(objet,a);                
                             }
                             if (objet.getClass().getDeclaredFields()[i].getType().getName().equals("java.sql.Date")){
-                                Date x =Date.valueOf(a);
+                                Date x = Date.valueOf(a);
                                     objet.getClass().getMethod(set,Date.class).invoke(objet,x);                
                             }
                             if (objet.getClass().getDeclaredFields()[i].getType().getName().equals("java.sql.Timestamp")){
                                     objet.getClass().getMethod(set,Timestamp.class).invoke(objet,a);                
                             }
+                          
+
                         }
                 }
+                
+            }
+         
+            try {
+                ifAttributeFileUpload(objet,request,response);
+            } catch (Exception e) {
+                e.getMessage();
+                e.printStackTrace(out);
             }
 
         }
@@ -200,7 +210,42 @@ public class FrontServlet extends HttpServlet {
             e.printStackTrace(out);
             e.getMessage();
         }
+    
     }
+
+    public String capitalize(String a)throws Exception{
+        String premier = a.substring(0,1).toUpperCase();
+        String last = a.substring(1);
+        return premier + last;
+    }
+
+    public void ifAttributeFileUpload(Object objet,HttpServletRequest request,HttpServletResponse response)throws Exception{
+             for(int i = 0; i < objet.getClass().getDeclaredFields().length; i++){
+                    if (objet.getClass().getDeclaredFields()[i].getType() == util.FileUpload.class) {
+                         FileUpload fileUpload = new FileUpload();
+                        String fieldName = objet.getClass().getDeclaredFields()[i].getName();
+                        Part filePart = request.getPart(fieldName);
+                        String fileName = filePart.getSubmittedFileName();
+
+                        // Lire les octets du fichier
+                        InputStream fileContent = filePart.getInputStream();
+                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                        byte[] buffer = new byte[4096];
+                        int bytesRead;
+                        while ((bytesRead = fileContent.read(buffer)) != -1) {
+                        byteStream.write(buffer, 0, bytesRead);
+                        }
+                        byte[] fileBytes = byteStream.toByteArray();
+
+                        // Setter les valeurs dans l'objet FileUpload
+                        fileUpload.setName(fileName);
+                        fileUpload.setContent(fileBytes);
+
+                        // Appeler le setter correspondant sur l'objet principal
+                        objet.getClass().getDeclaredMethod("set" + capitalize(objet.getClass().getDeclaredFields()[i].getName()), FileUpload.class).invoke(objet, fileUpload);
+                    }
+                }
+        }
 
 
      // EMP , nom Formulaire

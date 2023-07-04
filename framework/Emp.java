@@ -5,13 +5,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import java.sql.Date;
+import util.*;
 public class Emp {
     int Id;
     String Nom;
     String Prenoms;
-    String Genre;
-    Date DateNaissance;
-
+    FileUpload badge;
 
     public Emp() {
     }
@@ -38,39 +37,17 @@ public class Emp {
      public void setPrenoms(String nom) {
         this.Prenoms = nom;
     }
-    public String getGenre(){
-        return this.Genre;
-    }
-    public void setGenre(String ge){
-        this.Genre=ge;
-    }
-    public void setDateNaissance(Date d){
-        this.DateNaissance=d;
-    }
-    public Date getDateNaissance(){
-        return DateNaissance;
+    public FileUpload getBadge() {
+        return badge;
     }
 
-    public Emp(int id, String nom,String prenom, Date d) {
-        this.setId(id);
-        this.setNom(nom);
-        this.setPrenoms(prenom);
-        this.setDateNaissance(d);
+    public void setBadge(FileUpload badge) {
+        this.badge = badge;
     }
-
     public Emp(int id, String nom,String prenom) {
         this.setId(id);
         this.setNom(nom);
         this.setPrenoms(prenom);
-        // this.setDateNaissance(d);
-    }
-
-     public Emp(int id, String nom,String prenom,String genre) {
-        this.setId(id);
-        this.setNom(nom);
-        this.setPrenoms(prenom);
-        this.setGenre(genre);
-        // this.setDateNaissance(d);
     }
 
     public Emp(int id, String nom) {
@@ -96,20 +73,17 @@ public class Emp {
     
     @url("emp-save")
     public void save(){
-        System.out.println("coucou "+this.getNom()+" "+this.getPrenoms()+" nee le "+this.getDateNaissance());
+        System.out.println("coucou "+this.getNom()+" "+this.getPrenoms());
     }
 
-
-
-    // public ModelView findByToerana(Integer id,String nomp)throws Exception{
     @url("hab-emp")
     public ModelView findByToerana(String [] option)throws Exception{
         // 
        ModelView view = new ModelView("detailEmploye.jsp");
         Vector<Emp> emp=new Vector<>();
         Vector<Emp> e=new Vector<>();
-        emp.add(new Emp(1,"Rakotomaharo","Diana","fille"));
-        emp.add(new Emp(2,"Ramilijaona","Kantoniaina","fille"));
+        emp.add(new Emp(1,"Rakotomaharo","Diana"));
+        emp.add(new Emp(2,"Ramilijaona","Kantoniaina"));
         for(int i=0;i<emp.size();i++ ){
             for(int j=0;j<option.length;j++){
                 if(String.valueOf(emp.get(i).getId()).equals(option[j])){
@@ -121,4 +95,10 @@ public class Emp {
        return view;       
     }
 
+    @url("test-upload")
+    public ModelView upload()throws Exception{
+        ModelView modelView = new ModelView("test.jsp");
+        modelView.addItem("test", this);
+        return modelView;
+    }
 }
