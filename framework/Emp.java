@@ -1,11 +1,13 @@
 package dataObject;
-import annotations.url;
+import annotations.*;
 import mapping.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import java.sql.Date;
 import util.*;
+
+@Scope("Singleton")
 public class Emp {
     int Id;
     String Nom;
@@ -78,7 +80,6 @@ public class Emp {
 
     @url("hab-emp")
     public ModelView findByToerana(String [] option)throws Exception{
-        // 
        ModelView view = new ModelView("detailEmploye.jsp");
         Vector<Emp> emp=new Vector<>();
         Vector<Emp> e=new Vector<>();

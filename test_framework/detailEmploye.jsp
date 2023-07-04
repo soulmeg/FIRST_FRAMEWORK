@@ -16,7 +16,6 @@
         <p>Id : <%=e.getId()%></p>
         <p>Nom : <%=e.getNom()%></p>
         <p>Prenom(s) : <%=e.getPrenoms()%></p>
-        <p>Genre : <%=e.getGenre()%></p>
     <%}%>
 </body>
 </html>
