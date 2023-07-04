@@ -2,6 +2,7 @@ package servlet;
 import mapping.*;
 import dataObject.*;
 import annotations.url;
+import annotations.Scope;
 import util.*;
 import java.io.*;
 import java.lang.reflect.Method;
@@ -26,30 +27,45 @@ import javax.servlet.annotation.MultipartConfig;
 @MultipartConfig()
 public class FrontServlet extends HttpServlet {
     HashMap<String, Mapping> mappingUrls;
+    HashMap<String, Object> singletons;
+
+    public HashMap<String, Object> getSingletons() {
+        return singletons;
+    }
+
+
+    public void setSingletons(HashMap<String, Object> singletons) {
+        this.singletons = singletons;
+    }
 
     public HashMap<String, Mapping> getMappingUrls() {
         return mappingUrls;
     }
 
-
     public void setMappingUrls(HashMap<String, Mapping> mappingUrls) {
         this.mappingUrls = mappingUrls;
     }
 
+
     public void init() throws ServletException {
         try {
             mappingUrls = new HashMap<String, Mapping>();
+            singletons = new HashMap<>();
             String packageName = "dataObject";
             URL f = Thread.currentThread().getContextClassLoader().getResource(packageName.replace(".", "/"));
             for (File file : new File(f.getFile()).listFiles()) {
                 if (file.getName().contains(".class")) {
                     String className = file.getName().replaceAll(".class$", "");
                     Class<?> cls = Class.forName(packageName + "." + className);
-                    for (Method method : cls.getDeclaredMethods()) {
-                        if (method.isAnnotationPresent(url.class)) {
+                    for (Method method : cls.getDeclaredMethods()){
+                        if (method.isAnnotationPresent(url.class)){
                             mappingUrls.put(method.getAnnotation(url.class).value(), new Mapping(cls.getName(), method.getName()));
                         }
                     }
+                    if(cls.isAnnotationPresent(Scope.class)){
+                        singletons.put(cls.getName(),null);
+                    }
+                    
                 }
             }
         } catch (Exception e) {
@@ -66,13 +82,25 @@ public class FrontServlet extends HttpServlet {
             String url2=url.replace("/","");
         try {
             out.println(url2); //Nom de l'url
+            out.println(singletons);
+            
             if(this.getMappingUrls().containsKey(url2)){
                 String classname = this.getMappingUrls().get(url2).getClassName();
                 String methode = this.getMappingUrls().get(url2).getMethod();
                 Class<?> cls = Class.forName(classname);
                 Method[] methods = cls.getDeclaredMethods();
                 Vector<String> nomForm=liste_nomFormulaire(request);
-                Object objet = cls.newInstance();
+                Object objet = null;
+                if(this.getSingletons().containsKey(classname)){
+                    if(this.getSingletons().get(classname) == null){
+                        this.getSingletons().put(classname, cls.getConstructor().newInstance());
+                    }
+                    objet = this.getSingletons().get(classname);
+                }
+                else{
+                    objet= cls.getConstructor().newInstance();
+                }
+                out.println(objet);
                 invok_object(objet,request,response);
                 Method method = null;
                 for (Method m : methods) {
@@ -220,31 +248,34 @@ public class FrontServlet extends HttpServlet {
     }
 
     public void ifAttributeFileUpload(Object objet,HttpServletRequest request,HttpServletResponse response)throws Exception{
-             for(int i = 0; i < objet.getClass().getDeclaredFields().length; i++){
-                    if (objet.getClass().getDeclaredFields()[i].getType() == util.FileUpload.class) {
-                         FileUpload fileUpload = new FileUpload();
-                        String fieldName = objet.getClass().getDeclaredFields()[i].getName();
-                        Part filePart = request.getPart(fieldName);
-                        String fileName = filePart.getSubmittedFileName();
+        for(int i = 0; i < objet.getClass().getDeclaredFields().length; i++){
+            
+            if (objet.getClass().getDeclaredFields()[i].getType() == util.FileUpload.class) {
+                FileUpload fileUpload = new FileUpload();
+                String fieldName = objet.getClass().getDeclaredFields()[i].getName();
+                Part filePart = request.getPart(fieldName);
 
-                        // Lire les octets du fichier
-                        InputStream fileContent = filePart.getInputStream();
-                        ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-                        byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        while ((bytesRead = fileContent.read(buffer)) != -1) {
-                        byteStream.write(buffer, 0, bytesRead);
-                        }
-                        byte[] fileBytes = byteStream.toByteArray();
-
-                        // Setter les valeurs dans l'objet FileUpload
-                        fileUpload.setName(fileName);
-                        fileUpload.setContent(fileBytes);
-
-                        // Appeler le setter correspondant sur l'objet principal
-                        objet.getClass().getDeclaredMethod("set" + capitalize(objet.getClass().getDeclaredFields()[i].getName()), FileUpload.class).invoke(objet, fileUpload);
+                if(filePart != null) {
+                    String fileName = filePart.getSubmittedFileName();
+                    // Lire les octets du fichier
+                    InputStream fileContent = filePart.getInputStream();
+                    ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[4096];
+                    int bytesRead;
+                    while ((bytesRead = fileContent.read(buffer)) != -1) {
+                    byteStream.write(buffer, 0, bytesRead);
                     }
+                    byte[] fileBytes = byteStream.toByteArray();
+
+                    // Setter les valeurs dans l'objet FileUpload
+                    fileUpload.setName(fileName);
+                    fileUpload.setContent(fileBytes);
+
+                    // Appeler le setter correspondant sur l'objet principal
+                    objet.getClass().getDeclaredMethod("set" + capitalize(objet.getClass().getDeclaredFields()[i].getName()), FileUpload.class).invoke(objet, fileUpload);
                 }
+            }
+        }
         }
 
 
