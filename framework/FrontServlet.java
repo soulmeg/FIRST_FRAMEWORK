@@ -9,7 +9,9 @@ import java.io.*;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.lang.reflect.*;
 import javax.servlet.*;
@@ -117,7 +119,7 @@ public class FrontServlet extends HttpServlet {
                 } else {
                     objet = cls.getConstructor().newInstance();
                 }
-                out.println(objet);
+                // out.println(objet);
                 invok_object(objet, request, response);
                 Method method = null;
                 for (Method m : methods) {
@@ -126,22 +128,43 @@ public class FrontServlet extends HttpServlet {
                         break;
                     }
                 }
+
                 if (method != null) {
+                    if (method.isAnnotationPresent(Session.class)) {
+                        HashMap<String,Object> Hashsessions=new HashMap<>();
+                        HttpSession session = request.getSession();
+                        List<String> sessions = Collections.list(session.getAttributeNames());
+                        for (String string : sessions) {
+                            Hashsessions.put(string,session.getAttribute(string));
+                        }
+                        objet.getClass().getDeclaredMethod("setSession",HashMap.class).invoke(objet,Hashsessions);
+                    }
+
                     Class<?>[] parameterTypes = method.getParameterTypes();
                     if (parameterTypes.length > 0) {
                         ifHaveParameter(out, objet, methode, method, nomForm, parameterTypes, cls, request, response);
                     } else if (parameterTypes.length == 0) {
                         Method mi = cls.getDeclaredMethod(methode);
+
                         Object resp = mi.invoke(objet, (Object[]) null);
                         if (resp instanceof ModelView) {
                             // ModelView mv=(ModelView) mi.invoke(objet);
+                            if(method.isAnnotationPresent(Session.class)) {
+                                    HashMap<String,Object> Hashsessions=new HashMap<>();
+                                    HttpSession session = request.getSession();
+                                    List<String> sessions = Collections.list(session.getAttributeNames());
+                                    Hashsessions = (HashMap<String,Object>) objet.getClass().getDeclaredMethod("getSession").invoke(objet);
+                                    for (String string : Hashsessions.keySet()) {
+                                    session.setAttribute(string,Hashsessions.get(string));
+                                }
+                            }            
                             ModelView mv = (ModelView) resp;
+                            javax.swing.JOptionPane.showMessageDialog(new javax.swing.JFrame(),request.getSession().getAttribute(getSessionProfile()));
                             HttpSession session = request.getSession();
                             if (mi.isAnnotationPresent(Authentification.class)) {
-                                out.println(
-                                        "sessionProfile : " + request.getSession().getAttribute(getSessionProfile()));
+                                out.println("sessionProfile : " + request.getSession().getAttribute(getSessionProfile()));
                                 if ((((Authentification) mi.getAnnotation(Authentification.class)).user().trim().compareTo((String) request.getSession().getAttribute(getSessionProfile())) == 0) || ((Authentification) mi.getAnnotation(Authentification.class)).user().equals("")) {
-                                    for (Map.Entry<String, Object> e : mv.getData().entrySet()) {
+                                    for (Map.Entry<String,Object> e : mv.getData().entrySet()) {
                                         request.setAttribute(e.getKey(), e.getValue());
                                     }
                                     request.getRequestDispatcher(mv.getView()).forward(request, response);
@@ -206,7 +229,17 @@ public class FrontServlet extends HttpServlet {
         }
         Object[] obj_parametres = vect_object.toArray();
         checkVoid(obj_parametres, request, response);
+
         if (mi.invoke(objet, obj_parametres) instanceof ModelView) {
+            if (method.isAnnotationPresent(Session.class)) {
+                HashMap<String,Object> Hashsessions=new HashMap<>();
+                HttpSession session = request.getSession();
+                List<String> sessions = Collections.list(session.getAttributeNames());
+                Hashsessions = (HashMap<String,Object>) objet.getClass().getDeclaredMethod("getSession").invoke(objet);
+                for (String string : Hashsessions.keySet()) {
+                    session.setAttribute(string,Hashsessions.get(string));
+                }
+            }                                                                                                                                                           
             ModelView mv = (ModelView) mi.invoke(objet, obj_parametres);
             for (Map.Entry<String, Object> e : mv.getData().entrySet()) {
                 request.setAttribute(e.getKey(), e.getValue());
@@ -383,10 +416,8 @@ public class FrontServlet extends HttpServlet {
             HashMap<String,Object> objet = modelView.getSession();
             for (Map.Entry<String, Object> e : objet.entrySet()) {
                 request.getSession().setAttribute(e.getKey(), e.getValue());
-            }
-        } else {
-            throw new Exception("La session n'existe pas");
-        }
+            }   
+        } 
     }
 
     public void resetDefault(Object objet, HttpServletRequest request, HttpServletResponse response)throws Exception{
