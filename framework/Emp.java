@@ -67,9 +67,14 @@ public class Emp {
         this.setNom(nom);
     }
     
-    @url("emp-j")
-    public void findAll() {
-        System.out.println("Liste de tous les employes");
+    @RestAPI
+    @url("employe-list")
+    public Emp[] findAll() {
+        // System.out.println("Liste de tous les employes");
+        Emp [] emp =new Emp[2];
+        emp[0]=new Emp(1,"Diana");        
+        emp[1]=new Emp(2,"Megane");
+        return emp;
     }
 
     @url("emp-list")

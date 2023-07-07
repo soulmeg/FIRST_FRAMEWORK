@@ -143,8 +143,12 @@ public class FrontServlet extends HttpServlet {
                         ifHaveParameter(out, objet, methode, method, nomForm, parameterTypes, cls, request, response);
                     } else if (parameterTypes.length == 0) {
                         Method mi = cls.getDeclaredMethod(methode);
-
                         Object resp = mi.invoke(objet, (Object[]) null);
+                        
+                        if(method.isAnnotationPresent(RestAPI.class)){
+                            out.println(gson.toJson(resp));
+                        }
+
                         if (resp instanceof ModelView) {
                             // ModelView mv=(ModelView) mi.invoke(objet);
                             if(method.isAnnotationPresent(Session.class)) {
