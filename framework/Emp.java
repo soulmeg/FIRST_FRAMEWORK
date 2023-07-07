@@ -63,7 +63,7 @@ public class Emp {
     }
 
     @url("emp-list")
-    public static ModelView listEmp()throws Exception{
+    public ModelView listEmp()throws Exception{
         ModelView view = new ModelView("liste_employe.jsp");
         Vector<Emp> emp=new Vector<>();
         emp.add(new Emp(1,"Diana"));
