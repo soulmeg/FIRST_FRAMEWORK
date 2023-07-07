@@ -27,7 +27,7 @@ public class Handrana {
         this.admin = admin;
     }
 
-    @Authentification(user = "admin")
+    @Authentification(user = "")
     @url("test2-insert")
     public ModelView insert()throws Exception{
         ModelView modelView = new ModelView("list.jsp");
@@ -36,6 +36,7 @@ public class Handrana {
         list[0] = "contenue 1";
         list[1] = "contenue 2";
         modelView.addItem("ls", list);
+        modelView.setJson(true);
         return modelView;
     }
 
