@@ -1,14 +1,28 @@
 package mapping;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-
+import java.util.*;
 public class ModelView{
     String view;
     HashMap<String, Object> data=new HashMap<String,Object>();
     HashMap<String, Object> session;
-    boolean json=false;
+    boolean json = false;
+    boolean invalidateSession=false;
+    List<String> removeSession = new ArrayList<>();
 
+    public List<String> getRemoveSession() {
+        return removeSession;
+    }
+    public void setRemoveSession(List<String> removeSession) {
+        this.removeSession = removeSession;
+    }
+    public boolean isInvalidateSession() {
+        return invalidateSession;
+    }
+    public void setInvalidateSession(boolean invalidateSession) {
+        this.invalidateSession = invalidateSession;
+    }
     public boolean getJson() {
         return json;
     }
@@ -48,5 +62,10 @@ public class ModelView{
             setSession(new HashMap<String, Object>());
         }
         session.put(key, value);
+    }
+    public void addtoRemove(String ...toRemove){
+        for (String string : toRemove) {
+            this.getRemoveSession().add(string);
+        }
     }
 }

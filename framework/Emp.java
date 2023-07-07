@@ -77,6 +77,30 @@ public class Emp {
         return emp;
     }
 
+    @url("emp-delete")
+    public ModelView essaie_delete()throws Exception{
+        ModelView modelView = new ModelView("delete.jsp");
+        modelView.addSessionItem("megane", "mate");
+        modelView.addSessionItem("soul", "meg");        
+        modelView.addSessionItem("popo", "poo");        
+        modelView.addSessionItem("juju", "julia");        
+        modelView.addSessionItem("piso", "mimi");
+        return modelView;
+    }
+
+    @url("emp-delete2")
+    public ModelView essaie_delete2()throws Exception{
+        ModelView modelView = new ModelView("delete.jsp");
+        modelView.addtoRemove("juju","piso");
+        return modelView;
+    }
+     @url("emp-removeAll")
+    public ModelView removeAll()throws Exception{
+        ModelView modelView = new ModelView("delete.jsp");
+        modelView.setInvalidateSession(true);
+        return modelView;
+    }
+
     @url("emp-list")
     public ModelView listEmp()throws Exception{
         ModelView view = new ModelView("liste_employe.jsp");

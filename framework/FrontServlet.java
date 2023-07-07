@@ -144,11 +144,9 @@ public class FrontServlet extends HttpServlet {
                     } else if (parameterTypes.length == 0) {
                         Method mi = cls.getDeclaredMethod(methode);
                         Object resp = mi.invoke(objet, (Object[]) null);
-                        
                         if(method.isAnnotationPresent(RestAPI.class)){
                             out.println(gson.toJson(resp));
                         }
-
                         if (resp instanceof ModelView) {
                             // ModelView mv=(ModelView) mi.invoke(objet);
                             if(method.isAnnotationPresent(Session.class)) {
@@ -161,6 +159,14 @@ public class FrontServlet extends HttpServlet {
                                 }
                             }            
                             ModelView mv = (ModelView) resp;
+                            if(mv.isInvalidateSession()){
+                                request.getSession().invalidate();
+                            }
+                            if(mv.getRemoveSession().size() > 0){
+                                for (String removeSession : mv.getRemoveSession()) {
+                                    request.getSession().removeAttribute(removeSession);
+                                }
+                            }
                             // javax.swing.JOptionPane.showMessageDialog(new javax.swing.JFrame(),request.getSession().getAttribute(getSessionProfile()));
                             HttpSession session = request.getSession();
                             if (mi.isAnnotationPresent(Authentification.class)) {
@@ -211,6 +217,7 @@ public class FrontServlet extends HttpServlet {
             throws Exception {
         Object ob = null; // Initialisez la variable ob
         Method mi = cls.getDeclaredMethod(methode, parameterTypes);
+        Gson gson = new Gson();
         Parameter[] parameters = mi.getParameters();
         Vector<Object> vect_object = new Vector<>();
         Vector<String> param_exist = new Vector<>();
@@ -243,8 +250,11 @@ public class FrontServlet extends HttpServlet {
         }
         Object[] obj_parametres = vect_object.toArray();
         checkVoid(obj_parametres, request, response);
-
+        if(method.isAnnotationPresent(RestAPI.class)){
+            out.println(gson.toJson(objet));
+        }
         if (mi.invoke(objet, obj_parametres) instanceof ModelView) {
+            
             if (method.isAnnotationPresent(Session.class)) {
                 HashMap<String,Object> Hashsessions=new HashMap<>();
                 HttpSession session = request.getSession();
@@ -255,10 +265,17 @@ public class FrontServlet extends HttpServlet {
                 }
             }                                                                                                                                                           
             ModelView mv = (ModelView) mi.invoke(objet, obj_parametres);
+            if(mv.isInvalidateSession()){
+                request.getSession().invalidate();
+            }
+            if(mv.getRemoveSession().size() > 0){
+                for (String removeSession : mv.getRemoveSession()) {
+                    request.getSession().removeAttribute(removeSession);
+                }
+            }
             for (Map.Entry<String, Object> e : mv.getData().entrySet()) {
                 request.setAttribute(e.getKey(), e.getValue());
             }
-            Gson gson = new Gson();
               if(mv.getJson()){
                 response.setContentType("application/json");
                 out.println(gson.toJson(mv.getData()));
