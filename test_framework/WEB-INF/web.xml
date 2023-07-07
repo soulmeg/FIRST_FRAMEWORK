@@ -3,9 +3,23 @@
     <servlet>
         <servlet-name>FrontServlet</servlet-name>
         <servlet-class>servlet.FrontServlet</servlet-class>
+         <init-param>
+            <param-name>packages</param-name>
+            <param-value>dataObject</param-value>
+        </init-param>
+        <init-param>
+            <param-name>sessionName</param-name>
+            <!-- value izay tiany -->
+            <param-value>isConnected</param-value>
+        </init-param>
+        <init-param>
+            <param-name>sessionProfil</param-name>
+            <!-- value izay tiany -->
+            <param-value>profil</param-value>
+        </init-param>
     </servlet>
     <servlet-mapping>
-        <servlet-name>FrontServlet</servlet-name>
+        <servlet-name>FrontServlet</servlet-name>   
         <url-pattern>/</url-pattern>
     </servlet-mapping>
     <session-config>
