@@ -26,6 +26,7 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.Method;
 import javax.servlet.http.Part;
 import javax.servlet.annotation.MultipartConfig;
+import com.google.gson.Gson;
 
 @MultipartConfig()
 public class FrontServlet extends HttpServlet {
@@ -101,9 +102,6 @@ public class FrontServlet extends HttpServlet {
         String url = request.getServletPath();
         String url2 = url.replace("/", "");
         try {
-            out.println(url2); // Nom de l'url
-            out.println(singletons);
-
             if (this.getMappingUrls().containsKey(url2)) {
                 String classname = this.getMappingUrls().get(url2).getClassName();
                 String methode = this.getMappingUrls().get(url2).getMethod();
@@ -119,7 +117,6 @@ public class FrontServlet extends HttpServlet {
                 } else {
                     objet = cls.getConstructor().newInstance();
                 }
-                // out.println(objet);
                 invok_object(objet, request, response);
                 Method method = null;
                 for (Method m : methods) {
@@ -139,7 +136,8 @@ public class FrontServlet extends HttpServlet {
                         }
                         objet.getClass().getDeclaredMethod("setSession",HashMap.class).invoke(objet,Hashsessions);
                     }
-
+                    Gson gson = new Gson();
+                    
                     Class<?>[] parameterTypes = method.getParameterTypes();
                     if (parameterTypes.length > 0) {
                         ifHaveParameter(out, objet, methode, method, nomForm, parameterTypes, cls, request, response);
@@ -159,15 +157,20 @@ public class FrontServlet extends HttpServlet {
                                 }
                             }            
                             ModelView mv = (ModelView) resp;
-                            javax.swing.JOptionPane.showMessageDialog(new javax.swing.JFrame(),request.getSession().getAttribute(getSessionProfile()));
+                            // javax.swing.JOptionPane.showMessageDialog(new javax.swing.JFrame(),request.getSession().getAttribute(getSessionProfile()));
                             HttpSession session = request.getSession();
                             if (mi.isAnnotationPresent(Authentification.class)) {
-                                out.println("sessionProfile : " + request.getSession().getAttribute(getSessionProfile()));
                                 if ((((Authentification) mi.getAnnotation(Authentification.class)).user().trim().compareTo((String) request.getSession().getAttribute(getSessionProfile())) == 0) || ((Authentification) mi.getAnnotation(Authentification.class)).user().equals("")) {
                                     for (Map.Entry<String,Object> e : mv.getData().entrySet()) {
                                         request.setAttribute(e.getKey(), e.getValue());
                                     }
-                                    request.getRequestDispatcher(mv.getView()).forward(request, response);
+                                    if(mv.getJson()){
+                                        response.setContentType("application/json");
+                                        out.println(gson.toJson(mv.getData()));
+                                    }
+                                    else {
+                                        request.getRequestDispatcher(mv.getView()).forward(request, response);
+                                    }
                                 } else {
                                     throw new Exception("Vous n'avez pas le droit d'acceder a cette page");
                                 }
@@ -176,7 +179,14 @@ public class FrontServlet extends HttpServlet {
                                 for (Map.Entry<String, Object> e : mv.getData().entrySet()) {
                                     request.setAttribute(e.getKey(), e.getValue());
                                 }
-                                request.getRequestDispatcher(mv.getView()).forward(request, response);
+                                if(mv.getJson()){
+                                        response.setContentType("application/json");
+                                        out.println(gson.toJson(mv.getData()));
+                                }
+                                else {
+                                    request.getRequestDispatcher(mv.getView()).forward(request, response);
+                                }
+                                // request.getRequestDispatcher(mv.getView()).forward(request, response);
 
                             }
 
@@ -244,7 +254,15 @@ public class FrontServlet extends HttpServlet {
             for (Map.Entry<String, Object> e : mv.getData().entrySet()) {
                 request.setAttribute(e.getKey(), e.getValue());
             }
-            request.getRequestDispatcher(mv.getView()).forward(request, response);
+            Gson gson = new Gson();
+              if(mv.getJson()){
+                response.setContentType("application/json");
+                out.println(gson.toJson(mv.getData()));
+            }
+            else {
+                request.getRequestDispatcher(mv.getView()).forward(request, response);
+            }
+            // request.getRequestDispatcher(mv.getView()).forward(request, response);
         }
     }
 
@@ -375,7 +393,6 @@ public class FrontServlet extends HttpServlet {
         Vector<String> vect = new Vector<>();
         while (parametersName.hasMoreElements()) {
             String paramsName = parametersName.nextElement();
-            // out.println("Nom de l'input "+paramsName);
             vect.add(paramsName);
         }
         return vect;
