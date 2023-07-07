@@ -51,4 +51,6 @@ public class Handrana {
         modelView.addSessionItem("profil", this.getAdmin());
         return modelView;
     }
+
+    
 }
