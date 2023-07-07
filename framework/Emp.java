@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 import java.sql.Date;
+import javax.swing.*;
 import util.*;
 
 @Scope("Singleton")
@@ -13,6 +14,15 @@ public class Emp {
     String Nom;
     String Prenoms;
     FileUpload badge;
+    HashMap<String, Object> session;
+
+    public HashMap<String, Object> getSession() {
+        return session;
+    }
+
+    public void setSession(HashMap<String, Object> session) {
+        this.session = session;
+    }
 
     public Emp() {
     }
@@ -99,6 +109,16 @@ public class Emp {
     @url("test-upload")
     public ModelView upload()throws Exception{
         ModelView modelView = new ModelView("test.jsp");
+        modelView.addItem("test", this);
+        return modelView;
+    }
+
+    @Session()
+    @url("test-session")
+    public ModelView checkClassSession()throws Exception{
+        ModelView modelView = new ModelView("test.jsp");
+        // javax.swing.JOptionPane.showMessageDialog(new javax.swing.JFrame(),this.getSession().get("profil"));
+        this.getSession().put("profil","soulmate");
         modelView.addItem("test", this);
         return modelView;
     }
